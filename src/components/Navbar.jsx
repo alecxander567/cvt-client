@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useLogout } from "../hooks/useLogout";
 
 const navLinks = [
-  { label: "Gallery", path: "/gallery", aliases: ["/", "/home"] },
+  { label: "Gallery", path: "/home", aliases: ["/", "/home"] },
   { label: "Albums", path: "/albums" },
   { label: "Categories", path: "/categories" },
   { label: "History", path: "/history" },
@@ -15,11 +15,16 @@ function Navbar() {
   const location = useLocation();
   const { logout, loading } = useLogout();
 
-  const isActive = (link) =>
-    location.pathname === link.path ||
-    (link.aliases?.includes(location.pathname) ?? false);
+  const isActive = (link) => {
+    if (location.pathname === link.path) return true;
+    if (link.aliases?.includes(location.pathname)) return true;
+    if (link.path !== "/" && location.pathname.startsWith(link.path + "/"))
+      return true;
+    return false;
+  };
 
-  const isActivePath = (path) => location.pathname === path;
+  const isActivePath = (path) =>
+    location.pathname === path || location.pathname.startsWith(path + "/");
 
   return (
     <nav className="w-full border-b-2 border-black bg-white">
@@ -95,7 +100,6 @@ function Navbar() {
             Settings
           </Link>
 
-          {/* Desktop Log Out */}
           <button
             onClick={logout}
             disabled={loading}
@@ -159,8 +163,6 @@ function Navbar() {
             Settings
           </Link>
           <div className="h-px bg-gray-200 my-1" />
-
-          {/* Mobile Log Out */}
           <button
             onClick={logout}
             disabled={loading}

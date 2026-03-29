@@ -11,7 +11,7 @@ function HomePage() {
 
   const handleSuccess = () => {
     setAlert({ type: "success", message: "Image saved successfully!" });
-    refetch(); 
+    refetch();
   };
 
   const handleError = (msg) => {
@@ -20,7 +20,7 @@ function HomePage() {
 
   const handleUpdate = () => {
     setAlert({ type: "success", message: "Image updated successfully!" });
-    refetch(); 
+    refetch();
   };
 
   const handleDelete = () => {
@@ -32,8 +32,21 @@ function HomePage() {
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Gallery */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="font-black text-2xl uppercase tracking-tight text-black leading-none">
+              Gallery
+            </h1>
+            <p className="text-xs text-gray-400 mt-1 font-medium">
+              {images.length} image{images.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </div>
+
+        <div className="h-px bg-black mb-8" />
+
         {loading && (
           <div className="flex items-center justify-center py-24">
             <div className="flex gap-2">
@@ -86,7 +99,7 @@ function HomePage() {
         )}
 
         {!loading && images.length > 0 && (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {images.map((image) => (
               <ImageCard
                 key={image.id}
@@ -99,7 +112,6 @@ function HomePage() {
         )}
       </div>
 
-      {/* Spacer so last row isn't hidden behind FAB */}
       <div className="h-28" />
 
       <CameraButton onSuccess={handleSuccess} onError={handleError} />

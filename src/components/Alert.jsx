@@ -2,22 +2,27 @@ import React, { useEffect, useRef, useState } from "react";
 
 function Alert({ type, message, duration = 3000 }) {
   const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const prevMessage = useRef(null);
 
   useEffect(() => {
     if (!message || message === prevMessage.current) return;
     prevMessage.current = message;
 
+    const mount = setTimeout(() => setMounted(true), 0);
     const fadeIn = setTimeout(() => setVisible(true), 10);
     const fadeOut = setTimeout(() => setVisible(false), duration);
+    const unmount = setTimeout(() => setMounted(false), duration + 400);
 
     return () => {
+      clearTimeout(mount);
       clearTimeout(fadeIn);
       clearTimeout(fadeOut);
+      clearTimeout(unmount);
     };
   }, [message, duration]);
 
-  if (!message) return null;
+  if (!mounted) return null;
 
   const isError = type === "error";
 
@@ -35,15 +40,9 @@ function Alert({ type, message, duration = 3000 }) {
         className={`pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm w-full ${
           isError ? "bg-black text-white" : "bg-white text-black"
         }`}>
-        {/* Icon */}
         <span className="shrink-0">
           {isError ?
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path
                 d="M1 1L13 13M13 1L1 13"
                 stroke="white"
@@ -51,12 +50,7 @@ function Alert({ type, message, duration = 3000 }) {
                 strokeLinecap="round"
               />
             </svg>
-          : <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg">
+          : <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path
                 d="M1 7L5 11L13 3"
                 stroke="black"

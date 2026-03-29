@@ -1,16 +1,23 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { useEditImage } from "../hooks/useEditImage";
 import { useDeleteImage } from "../hooks/useDeleteImage";
 import ConfirmModal from "./DeleteConfirmationModal";
+import { useCompareImage } from "../hooks/useCompareImage";
+import CameraModal from "./CameraModal";
+import CompareResultModal from "./CompareResultModal";
 
 function ImageCard({ image, onUpdate, onDelete }) {
   const [expanded, setExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [touched, setTouched] = useState(false); 
-  const [showDeleteModal, setShowDeleteModal] = useState(false); 
+  const [touched, setTouched] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [name, setName] = useState(image.name || "");
   const [description, setDescription] = useState(image.description || "");
+  const [showCompareModal, setShowCompareModal] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
 
+  const { compareImage, loading: comparing, result } = useCompareImage();
   const { editImage, editing } = useEditImage();
   const { deleteImage, deleting } = useDeleteImage();
 
@@ -46,6 +53,12 @@ function ImageCard({ image, onUpdate, onDelete }) {
   const buttonsVisible =
     touched ? "opacity-100" : "opacity-0 group-hover:opacity-100";
 
+  const handleCompare = async (capturedImage) => {
+    setShowCompareModal(false);
+    setShowResultModal(true);
+    await compareImage(image.id, capturedImage);
+  };
+
   return (
     <>
       <div className="break-inside-avoid mb-4 group relative rounded-xl overflow-hidden border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] bg-white">
@@ -62,7 +75,9 @@ function ImageCard({ image, onUpdate, onDelete }) {
 
           {/* Hover overlay */}
           <div
-            className={`absolute inset-0 transition-all duration-300 ${touched ? "bg-black/20" : "bg-black/0 group-hover:bg-black/20"}`}
+            className={`absolute inset-0 transition-all duration-300 ${
+              touched ? "bg-black/20" : "bg-black/0 group-hover:bg-black/20"
+            }`}
           />
 
           {/* Category badge */}
@@ -72,7 +87,7 @@ function ImageCard({ image, onUpdate, onDelete }) {
             </span>
           )}
 
-          {/* Edit + Delete buttons */}
+          {/* Edit + Delete + Compare buttons */}
           {!isEditing && (
             <div
               className={`absolute top-3 right-3 flex gap-1 transition-opacity duration-300 ${buttonsVisible}`}>
@@ -102,7 +117,7 @@ function ImageCard({ image, onUpdate, onDelete }) {
               {/* Delete */}
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); 
+                  e.stopPropagation();
                   setShowDeleteModal(true);
                   setTouched(false);
                 }}
@@ -123,6 +138,30 @@ function ImageCard({ image, onUpdate, onDelete }) {
                   <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
                 </svg>
               </button>
+
+              {/* Compare */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowCompareModal(true);
+                  setTouched(false);
+                }}
+                className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg hover:bg-blue-600 hover:border-blue-600 hover:text-white transition-colors"
+                title="Compare with camera">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
+                  <rect x="2" y="7" width="10" height="10" rx="1.5" />
+                  <rect x="12" y="7" width="10" height="10" rx="1.5" />
+                  <line x1="12" y1="5" x2="12" y2="19" strokeWidth="2" />
+                </svg>
+              </button>
             </div>
           )}
         </div>
@@ -131,7 +170,6 @@ function ImageCard({ image, onUpdate, onDelete }) {
         <div className="p-3 border-t-2 border-black">
           {isEditing ?
             <div className="flex flex-col gap-2">
-              {/* Name field */}
               <input
                 type="text"
                 value={name}
@@ -139,8 +177,6 @@ function ImageCard({ image, onUpdate, onDelete }) {
                 placeholder="Image name"
                 className="w-full px-2 py-1.5 text-xs font-bold border-2 border-black rounded-lg outline-none focus:ring-2 focus:ring-black"
               />
-
-              {/* Description field */}
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -148,8 +184,6 @@ function ImageCard({ image, onUpdate, onDelete }) {
                 rows={2}
                 className="w-full px-2 py-1.5 text-xs border-2 border-black rounded-lg outline-none focus:ring-2 focus:ring-black resize-none"
               />
-
-              {/* Save / Cancel */}
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}
@@ -159,7 +193,6 @@ function ImageCard({ image, onUpdate, onDelete }) {
                 </button>
                 <button
                   onClick={() => {
-                    // Reset fields and close form on cancel
                     setName(image.name || "");
                     setDescription(image.description || "");
                     setIsEditing(false);
@@ -170,7 +203,6 @@ function ImageCard({ image, onUpdate, onDelete }) {
               </div>
             </div>
           : <>
-              {/* Name + date row */}
               <div className="flex items-start justify-between gap-2">
                 <p className="font-black uppercase text-xs tracking-tight text-black leading-tight flex-1">
                   {image.name || "Untitled"}
@@ -181,12 +213,12 @@ function ImageCard({ image, onUpdate, onDelete }) {
                   </span>
                 )}
               </div>
-
-              {/* Description */}
               {image.description && (
                 <div className="mt-2">
                   <p
-                    className={`text-sm text-black leading-relaxed ${!expanded ? "line-clamp-2" : ""}`}>
+                    className={`text-sm text-black leading-relaxed ${
+                      !expanded ? "line-clamp-2" : ""
+                    }`}>
                     {image.description}
                   </p>
                   {image.description.length > 80 && (
@@ -203,15 +235,40 @@ function ImageCard({ image, onUpdate, onDelete }) {
         </div>
       </div>
 
-      {/* Delete confirmation modal */}
-      <ConfirmModal
-        isOpen={showDeleteModal}
-        title="Delete Image"
-        message="Are you sure you want to delete this image? This action cannot be undone."
-        onConfirm={handleDelete}
-        onCancel={() => setShowDeleteModal(false)}
-        loading={deleting}
-      />
+      {/* Portaled modals — rendered into document.body, outside overflow:hidden */}
+      {showDeleteModal &&
+        createPortal(
+          <ConfirmModal
+            isOpen={showDeleteModal}
+            title="Delete Image"
+            message="Are you sure you want to delete this image? This action cannot be undone."
+            onConfirm={handleDelete}
+            onCancel={() => setShowDeleteModal(false)}
+            loading={deleting}
+          />,
+          document.body,
+        )}
+
+      {showCompareModal &&
+        createPortal(
+          <CameraModal
+            mode="compare"
+            onClose={() => setShowCompareModal(false)}
+            onCompare={handleCompare}
+          />,
+          document.body,
+        )}
+
+      {showResultModal &&
+        createPortal(
+          <CompareResultModal
+            isOpen={showResultModal}
+            onClose={() => setShowResultModal(false)}
+            result={result}
+            loading={comparing}
+          />,
+          document.body,
+        )}
     </>
   );
 }

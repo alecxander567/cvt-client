@@ -1,7 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useUploadImage } from "../hooks/useUploadImage";
 
-function CameraModal({ onClose, onSuccess, onError }) {
+function CameraModal({
+  onClose,
+  onSuccess,
+  onError,
+  mode = "upload",
+  onCompare,
+}) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [stream, setStream] = useState(null);
@@ -63,8 +69,15 @@ function CameraModal({ onClose, onSuccess, onError }) {
   };
 
   const handleUse = async () => {
+    if (mode === "compare") {
+      onCompare && onCompare(capturedImage);
+      handleClose();
+      return;
+    }
+
     const url = await upload(capturedImage);
     handleClose();
+
     if (url) {
       onSuccess && onSuccess(url);
     } else {
