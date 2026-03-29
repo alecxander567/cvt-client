@@ -14,12 +14,12 @@ function CompareResultModal({ isOpen, onClose, result, loading }) {
   if (!isOpen) return null;
 
   const similarity = result ? Math.round(result.similarity * 100) : 0;
-  const isMatch = result?.is_match;
+  const isMatch = similarity >= 50;
 
   const getScoreColor = () => {
     if (similarity >= 75) return "#16a34a";
     if (similarity >= 50) return "#d97706";
-    return "#dc2626"; // red
+    return "#dc2626";
   };
 
   const getScoreLabel = () => {
@@ -184,7 +184,7 @@ function CompareResultModal({ isOpen, onClose, result, loading }) {
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
                     Threshold
                   </p>
-                  <p className="font-black text-lg">0.75</p>
+                  <p className="font-black text-lg">0.50</p>
                 </div>
               </div>
             </div>
