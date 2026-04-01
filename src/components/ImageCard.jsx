@@ -7,14 +7,16 @@ import { useCompareImage } from "../hooks/useCompareImage";
 import CameraModal from "./CameraModal";
 import CompareResultModal from "./CompareResultModal";
 
-function ImageCard({ image, onUpdate, onDelete }) {
+function ImageCard({ image, categories = [], onUpdate, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
   const [touched, setTouched] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [name, setName] = useState(image.name || "");
   const [description, setDescription] = useState(image.description || "");
+  const [categoryId, setCategoryId] = useState(image.category_id || "");
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   const { compareImage, loading: comparing, result } = useCompareImage();
   const { editImage, editing } = useEditImage();
@@ -29,10 +31,26 @@ function ImageCard({ image, onUpdate, onDelete }) {
       })
     : null;
 
+  const resolvedCategoryName =
+    categories.find((c) => c.id === (categoryId || image.category_id))?.name ||
+    image.category ||
+    null;
+
   const handleSave = async () => {
-    const updated = await editImage(image.id, { name, description });
+    const updated = await editImage(image.id, {
+      name,
+      description,
+      category_id: categoryId || null,
+    });
     if (updated) {
       setIsEditing(false);
+      onUpdate?.();
+    }
+  };
+
+  const handleNameBlur = async () => {
+    if (name !== image.name) {
+      await editImage(image.id, { name });
       onUpdate?.();
     }
   };
@@ -57,11 +75,14 @@ function ImageCard({ image, onUpdate, onDelete }) {
   return (
     <>
       <div className="group relative rounded-xl overflow-hidden border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] bg-white flex flex-col">
-        {/* Fixed-size image area — object-contain so full image always visible */}
+        {/* Fixed-size image area */}
         <div
           className="relative w-full bg-gray-50 cursor-pointer flex items-center justify-center overflow-hidden"
           style={{ height: "200px" }}
-          onClick={() => setTouched((prev) => !prev)}>
+          onClick={() => {
+            if (!isEditing) setShowImageModal(true);
+            setTouched((prev) => !prev);
+          }}>
           <img
             src={image.url}
             alt={image.name || "Captured image"}
@@ -75,13 +96,6 @@ function ImageCard({ image, onUpdate, onDelete }) {
               touched ? "bg-black/20" : "bg-black/0 group-hover:bg-black/20"
             }`}
           />
-
-          {/* Category badge */}
-          {image.category && (
-            <span className="absolute top-3 left-3 bg-black text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md">
-              {image.category}
-            </span>
-          )}
 
           {/* Action buttons */}
           {!isEditing && (
@@ -180,6 +194,18 @@ function ImageCard({ image, onUpdate, onDelete }) {
                 rows={2}
                 className="w-full px-2 py-1.5 text-xs border-2 border-black rounded-lg outline-none focus:ring-2 focus:ring-black resize-none"
               />
+              {/* Category dropdown */}
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="w-full px-2 py-1.5 text-xs font-bold border-2 border-black rounded-lg outline-none focus:ring-2 focus:ring-black bg-white">
+                <option value="">No category</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}
@@ -191,6 +217,7 @@ function ImageCard({ image, onUpdate, onDelete }) {
                   onClick={() => {
                     setName(image.name || "");
                     setDescription(image.description || "");
+                    setCategoryId(image.category_id || "");
                     setIsEditing(false);
                   }}
                   className="flex-1 py-1.5 text-xs font-bold uppercase tracking-widest border-2 border-black rounded-lg hover:bg-gray-100 transition-colors">
@@ -200,17 +227,32 @@ function ImageCard({ image, onUpdate, onDelete }) {
             </div>
           : <>
               <div className="flex items-start justify-between gap-2">
-                <p className="font-black uppercase text-xs tracking-tight text-black leading-tight flex-1 truncate">
-                  {image.name || "Untitled"}
-                </p>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onBlur={handleNameBlur}
+                  onKeyDown={(e) => e.key === "Enter" && e.target.blur()}
+                  placeholder="Untitled"
+                  className="font-black uppercase text-xs tracking-tight text-black leading-tight flex-1 min-w-0 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-black outline-none transition-colors cursor-text"
+                />
                 {formattedDate && (
                   <span className="text-[10px] text-gray-400 shrink-0 mt-0.5">
                     {formattedDate}
                   </span>
                 )}
               </div>
+
+              {/* Category badge */}
+              {resolvedCategoryName && (
+                <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-widest bg-black text-white px-2 py-0.5 rounded-md">
+                  {resolvedCategoryName}
+                </span>
+              )}
+
+              {/* Description */}
               {image.description && (
-                <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-gray-800 mt-1.5 line-clamp-2 leading-relaxed">
                   {image.description}
                 </p>
               )}
@@ -251,6 +293,45 @@ function ImageCard({ image, onUpdate, onDelete }) {
             result={result}
             loading={comparing}
           />,
+          document.body,
+        )}
+
+      {showImageModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowImageModal(false)}
+            style={{
+              backdropFilter: "blur(12px)",
+              background: "rgba(0,0,0,0.6)",
+            }}>
+            {/* Close button — fixed to viewport so it's always visible */}
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="fixed top-4 right-4 w-9 h-9 flex items-center justify-center bg-white border-2 border-black rounded-lg hover:bg-black hover:text-white transition-colors shadow-md z-10">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            <div
+              className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}>
+              <img
+                src={image.url}
+                alt={image.name || "Image preview"}
+                className="max-w-full max-h-[85vh] object-contain rounded-xl border-2 border-white shadow-2xl"
+              />
+            </div>
+          </div>,
           document.body,
         )}
     </>

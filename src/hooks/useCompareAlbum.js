@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios"; // NEW
+import axios from "axios"; 
 
 export function useCompareAlbum() {
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export function useCompareAlbum() {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data", // important
+            "Content-Type": "multipart/form-data", 
           },
         },
       );

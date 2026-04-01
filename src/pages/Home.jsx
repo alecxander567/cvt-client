@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Navbar from "../components/Navbar";
 import CameraButton from "../components/CameraButton";
 import Alert from "../components/Alert";
 import ImageCard from "../components/ImageCard";
 import { useMyImages } from "../hooks/useMyImages";
+import { useCategories } from "../hooks/useCategories";
 
 function HomePage() {
   const [alert, setAlert] = useState({ type: "", message: "" });
   const [searchQuery, setSearchQuery] = useState("");
   const { images, loading, error, refetch } = useMyImages();
+  const { categories } = useCategories();
 
   const handleSuccess = () => {
     setAlert({ type: "success", message: "Image saved successfully!" });
@@ -49,7 +51,7 @@ function HomePage() {
             </p>
           </div>
 
-          {/* Search bar — mirrors Albums page */}
+          {/* Search bar */}
           <div className="relative w-full sm:w-44">
             <svg
               className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
@@ -144,6 +146,7 @@ function HomePage() {
               <ImageCard
                 key={image.id}
                 image={image}
+                categories={categories}
                 onUpdate={handleUpdate}
                 onDelete={handleDelete}
               />
