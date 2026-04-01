@@ -7,6 +7,7 @@ import { useMyImages } from "../hooks/useMyImages";
 
 function HomePage() {
   const [alert, setAlert] = useState({ type: "", message: "" });
+  const [searchQuery, setSearchQuery] = useState("");
   const { images, loading, error, refetch } = useMyImages();
 
   const handleSuccess = () => {
@@ -28,6 +29,10 @@ function HomePage() {
     refetch();
   };
 
+  const filtered = images.filter((img) =>
+    (img.name || "").toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -42,6 +47,30 @@ function HomePage() {
             <p className="text-xs text-gray-400 mt-1 font-medium">
               {images.length} image{images.length !== 1 ? "s" : ""}
             </p>
+          </div>
+
+          {/* Search bar — mirrors Albums page */}
+          <div className="relative w-full sm:w-44">
+            <svg
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search images..."
+              className="w-full pl-7 pr-3 py-2 sm:py-1.5 text-xs font-bold border-2 border-black rounded-xl outline-none focus:ring-2 focus:ring-black placeholder:font-normal placeholder:text-gray-400"
+            />
           </div>
         </div>
 
@@ -98,9 +127,20 @@ function HomePage() {
           </div>
         )}
 
-        {!loading && images.length > 0 && (
+        {!loading && !error && images.length > 0 && filtered.length === 0 && (
+          <div className="flex flex-col items-center py-16 sm:py-20 gap-3 text-center">
+            <p className="font-black text-sm uppercase tracking-widest">
+              No results
+            </p>
+            <p className="text-xs text-gray-400">
+              No images match "{searchQuery}"
+            </p>
+          </div>
+        )}
+
+        {!loading && filtered.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {images.map((image) => (
+            {filtered.map((image) => (
               <ImageCard
                 key={image.id}
                 image={image}

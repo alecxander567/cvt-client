@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useGetAlbums, useDeleteAlbum } from "../hooks/useAlbum";
+import { useCompareAlbum } from "../hooks/useCompareAlbum";
 import Navbar from "../components/Navbar";
+import CameraModal from "../components/CameraModal";
+import CompareResultModal from "../components/CompareResultModal";
 import {
   CreateAlbumModal,
   DeleteAlbumModal,
@@ -61,7 +64,21 @@ function ImagesIcon({ size = 16 }) {
   );
 }
 
-function AlbumCard({ album, onDelete, onManageImages, style }) {
+function CompareIcon({ size = 14 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M10 3H3v7M14 21h7v-7M21 3l-7 7M3 21l7-7"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function AlbumCard({ album, onDelete, onManageImages, onCompare, style }) {
   const formattedDate =
     album.created_at ?
       new Date(album.created_at).toLocaleDateString("en-US", {
@@ -75,7 +92,6 @@ function AlbumCard({ album, onDelete, onManageImages, style }) {
     <div
       className="group relative bg-white border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 overflow-hidden"
       style={style}>
-      {/* Thumbnail */}
       <div
         className="relative h-28 sm:h-32 bg-gray-50 border-b-2 border-black overflow-hidden cursor-pointer"
         onClick={() => onManageImages(album)}>
@@ -84,27 +100,20 @@ function AlbumCard({ album, onDelete, onManageImages, style }) {
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-[80%] h-20 bg-white border-2 border-black rounded-xl flex items-center justify-center">
           <AlbumIcon size={28} />
         </div>
-
-        {/* Hover hint — hidden on touch devices */}
         <div className="absolute inset-0 hidden sm:flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-all duration-200">
           <span className="text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black px-2 py-1 rounded-lg">
             Manage Images
           </span>
         </div>
-
-        {/* Delete button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             onDelete(album);
           }}
-          className="absolute top-2.5 right-2.5 w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-red-600 hover:border-red-600 hover:text-white transition-all duration-200 z-10"
-          title="Delete album">
+          className="absolute top-2.5 right-2.5 w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-red-600 hover:border-red-600 hover:text-white transition-all duration-200 z-10">
           <TrashIcon />
         </button>
       </div>
-
-      {/* Info */}
       <div className="px-3 sm:px-4 py-3">
         <p className="font-black text-xs sm:text-sm uppercase tracking-tight text-black truncate">
           {album.name}
@@ -115,8 +124,12 @@ function AlbumCard({ album, onDelete, onManageImages, style }) {
         <button
           onClick={() => onManageImages(album)}
           className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-black uppercase tracking-widest border-2 border-black rounded-lg hover:bg-black hover:text-white transition-colors">
-          <ImagesIcon size={11} />
-          Add / Edit Images
+          <ImagesIcon size={11} /> Add / Edit Images
+        </button>
+        <button
+          onClick={() => onCompare(album)}
+          className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-black uppercase tracking-widest border-2 border-black rounded-lg hover:bg-black hover:text-white transition-colors">
+          <CompareIcon size={11} /> Compare Image
         </button>
       </div>
     </div>
@@ -151,7 +164,6 @@ function Toast({ message, onDone }) {
     const t = setTimeout(onDone, 2500);
     return () => clearTimeout(t);
   }, [onDone]);
-
   return (
     <div
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 bg-black text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)] border-2 border-black whitespace-nowrap"
@@ -180,6 +192,7 @@ function LoadingDots() {
 function AlbumsPage() {
   const { albums, loading, fetchAlbums } = useGetAlbums();
   const { deleteAlbum, deleting } = useDeleteAlbum();
+  const { compareAlbum: runCompare, loading: comparing } = useCompareAlbum();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -188,17 +201,19 @@ function AlbumsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [toast, setToast] = useState(null);
 
+  const [compareAlbum, setCompareAlbum] = useState(null);
+  const [compareResults, setCompareResults] = useState(null);
+  const [showResults, setShowResults] = useState(false);
+
   useEffect(() => {
     fetchAlbums();
   }, [fetchAlbums]);
-
   useEffect(() => {
     setLocalAlbums(albums);
   }, [albums]);
 
-  const handleCreated = (newAlbum) => {
+  const handleCreated = (newAlbum) =>
     setLocalAlbums((prev) => [newAlbum, ...prev]);
-  };
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -215,6 +230,15 @@ function AlbumsPage() {
     if (removed > 0) parts.push(`${removed} removed`);
     setToast(parts.join(" · ") || "Saved");
   }, []);
+
+  const handleCompareCapture = async (imageBase64) => {
+    if (!compareAlbum) return;
+    setCompareResults(null);
+    setShowResults(true);
+
+    const data = await runCompare(compareAlbum.id, imageBase64);
+    setCompareResults(data ?? null);
+  };
 
   const filtered = localAlbums.filter((a) =>
     a.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -235,7 +259,6 @@ function AlbumsPage() {
               {localAlbums.length} album{localAlbums.length !== 1 ? "s" : ""}
             </p>
           </div>
-
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <div className="relative w-full sm:w-44">
               <svg
@@ -301,6 +324,7 @@ function AlbumsPage() {
                 album={album}
                 onDelete={(a) => setDeleteTarget(a)}
                 onManageImages={(a) => setPickerAlbum(a)}
+                onCompare={(a) => setCompareAlbum(a)} // ✅ opens CameraModal
                 style={{
                   animation: "fadeUp 0.25s ease both",
                   animationDelay: `${i * 40}ms`,
@@ -311,13 +335,12 @@ function AlbumsPage() {
         }
       </div>
 
-      {/* Modals */}
+      {/* ── Modals ── */}
       <CreateAlbumModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onCreate={handleCreated}
       />
-
       <DeleteAlbumModal
         isOpen={!!deleteTarget}
         albumName={deleteTarget?.name || ""}
@@ -325,7 +348,6 @@ function AlbumsPage() {
         onCancel={() => setDeleteTarget(null)}
         loading={deleting}
       />
-
       <ImagePickerModal
         isOpen={!!pickerAlbum}
         album={pickerAlbum}
@@ -333,21 +355,33 @@ function AlbumsPage() {
         onSaved={handleImagesSaved}
       />
 
+      {/* Camera modal — opens when user clicks "Compare Image" on an album */}
+      {compareAlbum && (
+        <CameraModal
+          isOpen={!!compareAlbum}
+          onClose={() => setCompareAlbum(null)}
+          mode="compare"
+          onCompare={handleCompareCapture}
+        />
+      )}
+
+      {/* Results modal — reuses your CompareResultModal, fed with best_match */}
+      <CompareResultModal
+        isOpen={showResults}
+        onClose={() => {
+          setShowResults(false);
+          setCompareResults(null);
+        }}
+        result={compareResults?.best_match ?? null}
+        loading={comparing}
+      />
+
       {toast && <Toast message={toast} onDone={() => setToast(null)} />}
 
       <style>{`
-        @keyframes popIn {
-          from { transform: scale(0.85); opacity: 0; }
-          to   { transform: scale(1);    opacity: 1; }
-        }
-        @keyframes fadeUp {
-          from { transform: translateY(12px); opacity: 0; }
-          to   { transform: translateY(0);    opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { transform: translateY(40px); opacity: 0; }
-          to   { transform: translateY(0);    opacity: 1; }
-        }
+        @keyframes popIn  { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes fadeUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       `}</style>
     </>
   );

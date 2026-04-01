@@ -8,7 +8,6 @@ import CameraModal from "./CameraModal";
 import CompareResultModal from "./CompareResultModal";
 
 function ImageCard({ image, onUpdate, onDelete }) {
-  const [expanded, setExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [touched, setTouched] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -46,30 +45,27 @@ function ImageCard({ image, onUpdate, onDelete }) {
     }
   };
 
-  const handleImageTap = () => {
-    setTouched((prev) => !prev);
-  };
-
-  const buttonsVisible =
-    touched ? "opacity-100" : "opacity-0 group-hover:opacity-100";
-
   const handleCompare = async (capturedImage) => {
     setShowCompareModal(false);
     setShowResultModal(true);
     await compareImage(image.id, capturedImage);
   };
 
+  const buttonsVisible =
+    touched ? "opacity-100" : "opacity-0 group-hover:opacity-100";
+
   return (
     <>
-      <div className="break-inside-avoid mb-4 group relative rounded-xl overflow-hidden border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] bg-white">
-        {/* Image */}
+      <div className="group relative rounded-xl overflow-hidden border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] bg-white flex flex-col">
+        {/* Fixed-size image area — object-contain so full image always visible */}
         <div
-          className="relative overflow-hidden cursor-pointer"
-          onClick={handleImageTap}>
+          className="relative w-full bg-gray-50 cursor-pointer flex items-center justify-center overflow-hidden"
+          style={{ height: "200px" }}
+          onClick={() => setTouched((prev) => !prev)}>
           <img
             src={image.url}
             alt={image.name || "Captured image"}
-            className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="max-w-full max-h-full object-contain"
             loading="lazy"
           />
 
@@ -87,7 +83,7 @@ function ImageCard({ image, onUpdate, onDelete }) {
             </span>
           )}
 
-          {/* Edit + Delete + Compare buttons */}
+          {/* Action buttons */}
           {!isEditing && (
             <div
               className={`absolute top-3 right-3 flex gap-1 transition-opacity duration-300 ${buttonsVisible}`}>
@@ -167,7 +163,7 @@ function ImageCard({ image, onUpdate, onDelete }) {
         </div>
 
         {/* Details */}
-        <div className="p-3 border-t-2 border-black">
+        <div className="p-3 border-t-2 border-black flex-1">
           {isEditing ?
             <div className="flex flex-col gap-2">
               <input
@@ -204,7 +200,7 @@ function ImageCard({ image, onUpdate, onDelete }) {
             </div>
           : <>
               <div className="flex items-start justify-between gap-2">
-                <p className="font-black uppercase text-xs tracking-tight text-black leading-tight flex-1">
+                <p className="font-black uppercase text-xs tracking-tight text-black leading-tight flex-1 truncate">
                   {image.name || "Untitled"}
                 </p>
                 {formattedDate && (
@@ -214,28 +210,16 @@ function ImageCard({ image, onUpdate, onDelete }) {
                 )}
               </div>
               {image.description && (
-                <div className="mt-2">
-                  <p
-                    className={`text-sm text-black leading-relaxed ${
-                      !expanded ? "line-clamp-2" : ""
-                    }`}>
-                    {image.description}
-                  </p>
-                  {image.description.length > 80 && (
-                    <button
-                      onClick={() => setExpanded(!expanded)}
-                      className="text-[10px] font-bold uppercase tracking-widest text-black mt-1 hover:underline">
-                      {expanded ? "Less" : "More"}
-                    </button>
-                  )}
-                </div>
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
+                  {image.description}
+                </p>
               )}
             </>
           }
         </div>
       </div>
 
-      {/* Portaled modals — rendered into document.body, outside overflow:hidden */}
+      {/* Portaled modals */}
       {showDeleteModal &&
         createPortal(
           <ConfirmModal
