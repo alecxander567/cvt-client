@@ -10,6 +10,7 @@ import SignUpPage from "./pages/SignUp";
 import HomePage from "./pages/Home";
 import AlbumsPage from "./pages/Albums";
 import CategoriesPage from "./pages/Categories";
+import HistoryPage from "./pages/History";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/home" element={<HomePage />} />
         <Route path="/albums" element={<AlbumsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/history" element={<HistoryPage />} />
       </Routes>
     </Router>
   );
