@@ -1,19 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useLogout } from "../hooks/useLogout";
+import {
+  HISTORY_BADGE_KEY,
+  clearActivityFlag,
+  getActivityFlag,
+} from "../utils/activityFlag";
 
 const navLinks = [
   { label: "Gallery", path: "/home", aliases: ["/", "/home"] },
   { label: "Albums", path: "/albums" },
   { label: "Categories", path: "/categories" },
-  { label: "History", path: "/history" },
+  { label: "History", path: "/history", badge: true },
   { label: "Archive", path: "/archive" },
 ];
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hasNewActivity, setHasNewActivity] = useState(() => getActivityFlag());
   const location = useLocation();
   const { logout, loading } = useLogout();
+
+  useEffect(() => {
+    const handleStorageEvent = (e) => {
+      if (e.key === HISTORY_BADGE_KEY) {
+        setHasNewActivity(e.newValue === "true");
+      }
+    };
+
+    const handleCustomEvent = () => {
+      setHasNewActivity(getActivityFlag());
+    };
+
+    window.addEventListener("storage", handleStorageEvent);
+    window.addEventListener("history-activity-updated", handleCustomEvent);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageEvent);
+      window.removeEventListener("history-activity-updated", handleCustomEvent);
+    };
+  }, []);
+
+  const handleNavClick = (path) => {
+    if (path === "/history") {
+      clearActivityFlag();
+      setHasNewActivity(false);
+    }
+    setMenuOpen(false);
+  };
 
   const isActive = (link) => {
     if (location.pathname === link.path) return true;
@@ -69,12 +103,16 @@ function Navbar() {
             <Link
               key={link.path}
               to={link.path}
-              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-colors ${
+              onClick={() => handleNavClick(link.path)}
+              className={`relative px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-colors ${
                 isActive(link) ?
                   "bg-black text-white"
                 : "text-gray-500 hover:text-black hover:bg-gray-100"
               }`}>
               {link.label}
+              {link.badge && hasNewActivity && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+              )}
             </Link>
           ))}
 
@@ -133,13 +171,16 @@ function Navbar() {
             <Link
               key={link.path}
               to={link.path}
-              onClick={() => setMenuOpen(false)}
-              className={`px-3 py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-colors ${
+              onClick={() => handleNavClick(link.path)}
+              className={`relative px-3 py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-colors ${
                 isActive(link) ?
                   "bg-black text-white"
                 : "text-gray-500 hover:text-black hover:bg-gray-100"
               }`}>
               {link.label}
+              {link.badge && hasNewActivity && (
+                <span className="absolute top-2 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+              )}
             </Link>
           ))}
           <Link

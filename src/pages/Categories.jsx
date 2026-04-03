@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Alert from "../components/Alert";
+import ConfirmModal from "../components/ConfirmModal";
 import {
   useCategories,
   useCreateCategory,
@@ -47,9 +48,9 @@ function CategoriesPage() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     try {
-      await deleteCategory(id);
+      await deleteCategory(deletingId);
       setDeletingId(null);
       showAlert("success", "Category deleted successfully!");
       refetch();
@@ -57,6 +58,8 @@ function CategoriesPage() {
       showAlert("error", err.message);
     }
   };
+
+  const deletingCategory = categories.find((c) => c.id === deletingId);
 
   return (
     <div className="min-h-screen bg-white">
@@ -237,47 +240,6 @@ function CategoriesPage() {
                               </svg>
                             </button>
                           </>
-                        : deletingId === cat.id ?
-                          <>
-                            <span className="text-[10px] text-gray-500 font-bold mr-1">
-                              Sure?
-                            </span>
-                            {/* Confirm delete */}
-                            <button
-                              onClick={() => handleDelete(cat.id)}
-                              disabled={deleting}
-                              className="w-8 h-8 flex items-center justify-center bg-red-600 text-white border-2 border-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                              title="Confirm delete">
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round">
-                                <path d="M1 13l4 4L19 5" />
-                              </svg>
-                            </button>
-                            {/* Cancel delete */}
-                            <button
-                              onClick={() => setDeletingId(null)}
-                              className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg hover:bg-gray-100 transition-colors"
-                              title="Cancel">
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round">
-                                <path d="M18 6L6 18M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </>
                         : <>
                             {/* Edit */}
                             <button
@@ -334,6 +296,21 @@ function CategoriesPage() {
       </div>
 
       <Alert type={alert.type} message={alert.message} />
+
+      <ConfirmModal
+        isOpen={!!deletingId}
+        title="Delete Category"
+        message={
+          deletingCategory ?
+            `Are you sure you want to delete "${deletingCategory.name}"? This action cannot be undone.`
+          : "Are you sure you want to delete this category?"
+        }
+        confirmLabel="Delete"
+        loadingLabel="Deleting..."
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeletingId(null)}
+      />
     </div>
   );
 }

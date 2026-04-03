@@ -6,6 +6,13 @@ const ACTION_STYLES = {
   CREATE: "bg-green-100 text-green-800",
   UPDATE: "bg-blue-100 text-blue-800",
   DELETE: "bg-red-100 text-red-800",
+  PERMANENT_DELETE: "bg-red-100 text-red-800",
+  ARCHIVE: "bg-yellow-100 text-yellow-800",
+  RESTORE: "bg-purple-100 text-purple-800",
+};
+
+const ACTION_LABEL = {
+  PERMANENT_DELETE: "DELETE",
 };
 
 function timeAgo(iso) {
@@ -21,7 +28,13 @@ function HistoryPage() {
   const [filter, setFilter] = useState("ALL");
 
   const filtered =
-    filter === "ALL" ? logs : logs.filter((log) => log.action === filter);
+    filter === "ALL" ? logs : (
+      logs.filter((log) =>
+        filter === "DELETE" ?
+          log.action === "DELETE" || log.action === "PERMANENT_DELETE"
+        : log.action === filter,
+      )
+    );
 
   return (
     <div className="min-h-screen bg-white">
@@ -49,6 +62,7 @@ function HistoryPage() {
             <option value="CREATE">Create</option>
             <option value="UPDATE">Update</option>
             <option value="DELETE">Delete</option>
+            <option value="ARCHIVE">Archived</option>
           </select>
         </div>
 
@@ -125,7 +139,7 @@ function HistoryPage() {
                   className={`mt-0.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide flex-shrink-0 ${
                     ACTION_STYLES[log.action] ?? "bg-gray-100 text-gray-600"
                   }`}>
-                  {log.action}
+                  {ACTION_LABEL[log.action] ?? log.action}
                 </span>
 
                 <div className="flex-1 min-w-0">

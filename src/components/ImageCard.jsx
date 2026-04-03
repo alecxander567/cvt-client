@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { useEditImage } from "../hooks/useEditImage";
 import { useDeleteImage } from "../hooks/useDeleteImage";
-import ConfirmModal from "./DeleteConfirmationModal";
+import ConfirmModal from "./ConfirmModal";
 import { useCompareImage } from "../hooks/useCompareImage";
 import CameraModal from "./CameraModal";
 import CompareResultModal from "./CompareResultModal";
@@ -124,7 +124,7 @@ function ImageCard({ image, categories = [], onUpdate, onDelete }) {
                 </svg>
               </button>
 
-              {/* Delete */}
+              {/* Archive (soft delete) */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -132,7 +132,7 @@ function ImageCard({ image, categories = [], onUpdate, onDelete }) {
                   setTouched(false);
                 }}
                 className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg hover:bg-red-600 hover:border-red-600 hover:text-white transition-colors"
-                title="Delete">
+                title="Archive">
                 <svg
                   width="13"
                   height="13"
@@ -262,12 +262,16 @@ function ImageCard({ image, categories = [], onUpdate, onDelete }) {
       </div>
 
       {/* Portaled modals */}
+
+      {/* Archive confirm — soft deletes the image, recoverable from Archive page */}
       {showDeleteModal &&
         createPortal(
           <ConfirmModal
             isOpen={showDeleteModal}
-            title="Delete Image"
-            message="Are you sure you want to delete this image? This action cannot be undone."
+            title="Archive Image?"
+            message="This image will be moved to your archive. You can restore it anytime."
+            confirmLabel="Archive"
+            loadingLabel="Archiving..."
             onConfirm={handleDelete}
             onCancel={() => setShowDeleteModal(false)}
             loading={deleting}
@@ -305,7 +309,7 @@ function ImageCard({ image, categories = [], onUpdate, onDelete }) {
               backdropFilter: "blur(12px)",
               background: "rgba(0,0,0,0.6)",
             }}>
-            {/* Close button — fixed to viewport so it's always visible */}
+            {/* Close button */}
             <button
               onClick={() => setShowImageModal(false)}
               className="fixed top-4 right-4 w-9 h-9 flex items-center justify-center bg-white border-2 border-black rounded-lg hover:bg-black hover:text-white transition-colors shadow-md z-10">

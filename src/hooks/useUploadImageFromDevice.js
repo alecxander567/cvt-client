@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { flagNewActivity } from "../utils/activityFlag";
 
 export function useUploadImageFromDevice() {
   const [uploading, setUploading] = useState(false);
@@ -27,6 +28,7 @@ export function useUploadImageFromDevice() {
         },
       );
 
+      flagNewActivity();
       return response.data;
     } catch (err) {
       console.error(err);

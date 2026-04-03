@@ -26,5 +26,13 @@ export function useActivityLogs() {
     fetchLogs();
   }, [fetchLogs]);
 
+  // Auto-refetch whenever any hook flags a new activity
+  useEffect(() => {
+    const handleNewActivity = () => fetchLogs();
+    window.addEventListener("history-activity-updated", handleNewActivity);
+    return () =>
+      window.removeEventListener("history-activity-updated", handleNewActivity);
+  }, [fetchLogs]);
+
   return { logs, loading, error, refetch: fetchLogs };
 }

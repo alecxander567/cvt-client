@@ -4,11 +4,9 @@ import { useCompareAlbum } from "../hooks/useCompareAlbum";
 import Navbar from "../components/Navbar";
 import CameraModal from "../components/CameraModal";
 import CompareResultModal from "../components/CompareResultModal";
-import {
-  CreateAlbumModal,
-  DeleteAlbumModal,
-  ImagePickerModal,
-} from "../components/AlbumsModal";
+import ConfirmModal from "../components/ConfirmModal";
+import Alert from "../components/Alert";
+import { CreateAlbumModal, ImagePickerModal } from "../components/AlbumsModal";
 
 function AlbumIcon({ size = 18 }) {
   return (
@@ -159,20 +157,6 @@ function EmptyState({ onCreateClick }) {
   );
 }
 
-function Toast({ message, onDone }) {
-  useEffect(() => {
-    const t = setTimeout(onDone, 2500);
-    return () => clearTimeout(t);
-  }, [onDone]);
-  return (
-    <div
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 bg-black text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)] border-2 border-black whitespace-nowrap"
-      style={{ animation: "slideUp 0.2s ease" }}>
-      {message}
-    </div>
-  );
-}
-
 function LoadingDots() {
   return (
     <div className="flex items-center justify-center py-24">
@@ -199,28 +183,39 @@ function AlbumsPage() {
   const [pickerAlbum, setPickerAlbum] = useState(null);
   const [localAlbums, setLocalAlbums] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [toast, setToast] = useState(null);
+  const [alert, setAlert] = useState({ type: "", message: "" });
 
   const [compareAlbum, setCompareAlbum] = useState(null);
   const [compareResults, setCompareResults] = useState(null);
   const [showResults, setShowResults] = useState(false);
 
+  const showAlert = (type, message) => setAlert({ type, message });
+
   useEffect(() => {
     fetchAlbums();
   }, [fetchAlbums]);
+
   useEffect(() => {
     setLocalAlbums(albums);
   }, [albums]);
 
-  const handleCreated = (newAlbum) =>
+  const handleCreated = (newAlbum) => {
     setLocalAlbums((prev) => [newAlbum, ...prev]);
+    showAlert("success", `Album "${newAlbum.name}" created successfully!`);
+  };
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
     const ok = await deleteAlbum(deleteTarget.id);
     if (ok) {
       setLocalAlbums((prev) => prev.filter((a) => a.id !== deleteTarget.id));
+      showAlert(
+        "success",
+        `Album "${deleteTarget.name}" deleted successfully!`,
+      );
       setDeleteTarget(null);
+    } else {
+      showAlert("error", "Failed to delete album. Please try again.");
     }
   };
 
@@ -228,7 +223,7 @@ function AlbumsPage() {
     const parts = [];
     if (added > 0) parts.push(`${added} image${added !== 1 ? "s" : ""} added`);
     if (removed > 0) parts.push(`${removed} removed`);
-    setToast(parts.join(" · ") || "Saved");
+    showAlert("success", parts.join(" · ") || "Saved");
   }, []);
 
   const handleCompareCapture = async (imageBase64) => {
@@ -324,7 +319,7 @@ function AlbumsPage() {
                 album={album}
                 onDelete={(a) => setDeleteTarget(a)}
                 onManageImages={(a) => setPickerAlbum(a)}
-                onCompare={(a) => setCompareAlbum(a)} // ✅ opens CameraModal
+                onCompare={(a) => setCompareAlbum(a)}
                 style={{
                   animation: "fadeUp 0.25s ease both",
                   animationDelay: `${i * 40}ms`,
@@ -341,13 +336,22 @@ function AlbumsPage() {
         onClose={() => setShowCreateModal(false)}
         onCreate={handleCreated}
       />
-      <DeleteAlbumModal
+
+      <ConfirmModal
         isOpen={!!deleteTarget}
-        albumName={deleteTarget?.name || ""}
+        title="Delete Album"
+        message={
+          deleteTarget ?
+            `Are you sure you want to delete "${deleteTarget.name}"? This will unlink all images from the album.`
+          : "Are you sure you want to delete this album?"
+        }
+        confirmLabel="Delete"
+        loadingLabel="Deleting..."
+        loading={deleting}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
-        loading={deleting}
       />
+
       <ImagePickerModal
         isOpen={!!pickerAlbum}
         album={pickerAlbum}
@@ -355,7 +359,6 @@ function AlbumsPage() {
         onSaved={handleImagesSaved}
       />
 
-      {/* Camera modal — opens when user clicks "Compare Image" on an album */}
       {compareAlbum && (
         <CameraModal
           isOpen={!!compareAlbum}
@@ -365,7 +368,6 @@ function AlbumsPage() {
         />
       )}
 
-      {/* Results modal — reuses your CompareResultModal, fed with best_match */}
       <CompareResultModal
         isOpen={showResults}
         onClose={() => {
@@ -376,7 +378,7 @@ function AlbumsPage() {
         loading={comparing}
       />
 
-      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
+      <Alert type={alert.type} message={alert.message} />
 
       <style>{`
         @keyframes popIn  { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }

@@ -1,14 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
+import { flagNewActivity } from "../utils/activityFlag";
 
-/**
- * useDeleteImage
- * Returns { deleteImage, deleting, error }
- *
- * Usage:
- *   const { deleteImage, deleting, error } = useDeleteImage();
- *   await deleteImage(imageId);
- */
 export function useDeleteImage() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
@@ -16,7 +9,6 @@ export function useDeleteImage() {
   const deleteImage = async (imageId) => {
     setDeleting(true);
     setError(null);
-
     try {
       const token = localStorage.getItem("access_token");
       if (!token) throw new Error("Not authenticated");
@@ -25,11 +17,11 @@ export function useDeleteImage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      flagNewActivity();
       return true;
     } catch (err) {
-      // Axios wraps server errors in err.response — extract detail if present
       const message =
-        err.response?.data?.detail || err.message || "Failed to delete image";
+        err.response?.data?.detail || err.message || "Failed to archive image";
       setError(message);
       return false;
     } finally {

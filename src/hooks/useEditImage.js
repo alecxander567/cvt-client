@@ -1,14 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
+import { flagNewActivity } from "../utils/activityFlag";
 
-/**
- * useEditImage
- * Returns { editImage, editing, error }
- *
- * Usage:
- *   const { editImage, editing, error } = useEditImage();
- *   await editImage(imageId, { name: "New name", description: "New desc" });
- */
 export function useEditImage() {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState(null);
@@ -16,7 +9,6 @@ export function useEditImage() {
   const editImage = async (imageId, updates) => {
     setEditing(true);
     setError(null);
-
     try {
       const token = localStorage.getItem("access_token");
       if (!token) throw new Error("Not authenticated");
@@ -27,9 +19,9 @@ export function useEditImage() {
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
+      flagNewActivity();
       return res.data;
     } catch (err) {
-      // Axios wraps server errors in err.response — extract detail if present
       const message =
         err.response?.data?.detail || err.message || "Failed to update image";
       setError(message);

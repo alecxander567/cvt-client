@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import axios from "axios";
+import { flagNewActivity } from "../utils/activityFlag";
 
 const BASE_URL = "http://localhost:8000/albums";
 const IMAGES_URL = "http://localhost:8000/images";
@@ -48,6 +49,7 @@ export function useCreateAlbum() {
         { name },
         { headers: getAuthHeader() },
       );
+      flagNewActivity();
       return res.data;
     } catch (err) {
       console.error("Failed to create album:", err);
@@ -98,6 +100,7 @@ export function useDeleteAlbum() {
       await axios.delete(`${BASE_URL}/${albumId}`, {
         headers: getAuthHeader(),
       });
+      flagNewActivity();
       return true;
     } catch (err) {
       console.error("Failed to delete album:", err);
@@ -150,6 +153,7 @@ export function useSetAlbumImages() {
         { image_ids: imageIds, removed_ids: removedIds },
         { headers: getAuthHeader() },
       );
+      flagNewActivity();
       return res.data;
     } catch (err) {
       console.error("Failed to update album images:", err);

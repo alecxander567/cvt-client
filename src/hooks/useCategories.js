@@ -1,13 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { flagNewActivity } from "../utils/activityFlag";
 
-const api = axios.create({
-  baseURL: "http://localhost:8000",
-});
-
-const getHeaders = (token) => ({
-  Authorization: `Bearer ${token}`,
-});
+const api = axios.create({ baseURL: "http://localhost:8000" });
+const getHeaders = (token) => ({ Authorization: `Bearer ${token}` });
 
 export function useCategories() {
   const [categories, setCategories] = useState([]);
@@ -50,6 +46,7 @@ export function useCreateCategory() {
         { name },
         { headers: getHeaders(token) },
       );
+      flagNewActivity();
       return data;
     } finally {
       setCreating(false);
@@ -71,6 +68,7 @@ export function useUpdateCategory() {
         { name },
         { headers: getHeaders(token) },
       );
+      flagNewActivity();
       return data;
     } finally {
       setUpdating(false);
@@ -87,9 +85,8 @@ export function useDeleteCategory() {
   const deleteCategory = async (id) => {
     setDeleting(true);
     try {
-      await api.delete(`/categories/${id}`, {
-        headers: getHeaders(token),
-      });
+      await api.delete(`/categories/${id}`, { headers: getHeaders(token) });
+      flagNewActivity();
       return true;
     } finally {
       setDeleting(false);

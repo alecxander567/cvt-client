@@ -11,6 +11,7 @@ import HomePage from "./pages/Home";
 import AlbumsPage from "./pages/Albums";
 import CategoriesPage from "./pages/Categories";
 import HistoryPage from "./pages/History";
+import ArchivePage from "./pages/Archive";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/albums" element={<AlbumsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/history" element={<HistoryPage />} />
+        <Route path="/archive" element={<ArchivePage />} />
       </Routes>
     </Router>
   );
