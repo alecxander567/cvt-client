@@ -3,7 +3,6 @@ import Navbar from "../components/Navbar";
 import { useProfileSettings } from "../hooks/useProfileSettings";
 import Alert from "../components/Alert";
 
-// ── small reusable field ──────────────────────────────────────────────────────
 function Field({ label, type = "text", value, onChange, placeholder }) {
   const [show, setShow] = useState(false);
   const isPassword = type === "password";
@@ -60,7 +59,6 @@ function Field({ label, type = "text", value, onChange, placeholder }) {
   );
 }
 
-// ── section wrapper ───────────────────────────────────────────────────────────
 function Section({ title, description, children }) {
   return (
     <div className="flex flex-col gap-5">
@@ -77,7 +75,6 @@ function Section({ title, description, children }) {
   );
 }
 
-// ── main page ─────────────────────────────────────────────────────────────────
 function ProfileSettingsPage() {
   const {
     user,
@@ -95,7 +92,6 @@ function ProfileSettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [alert, setAlert] = useState({ type: "", message: "" });
 
-  // Populate fields once — only on the first time user becomes available
   const initialized = useRef(false);
   useEffect(() => {
     if (user && !initialized.current) {
@@ -105,7 +101,6 @@ function ProfileSettingsPage() {
     }
   }, [user]);
 
-  // Pipe hook error/success into the Alert component
   useEffect(() => {
     if (error) setAlert({ type: "error", message: error });
   }, [error]);
@@ -114,7 +109,6 @@ function ProfileSettingsPage() {
     if (success) setAlert({ type: "success", message: success });
   }, [success]);
 
-  // Clear hook messages on unmount
   useEffect(() => {
     return () => clearMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps

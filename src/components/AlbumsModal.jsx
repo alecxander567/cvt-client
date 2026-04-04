@@ -57,7 +57,6 @@ function CheckIcon() {
   );
 }
 
-// ── Shared hook for the rAF-based open/close animation ────────────────────────
 function useModalAnimation(isOpen) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -67,7 +66,6 @@ function useModalAnimation(isOpen) {
   return visible;
 }
 
-// ── DeleteAlbumModal ──────────────────────────────────────────────────────────
 export function DeleteAlbumModal({
   isOpen,
   albumName,
@@ -130,7 +128,6 @@ export function DeleteAlbumModal({
   );
 }
 
-// ── CreateAlbumModal ──────────────────────────────────────────────────────────
 export function CreateAlbumModal({ isOpen, onClose, onCreate }) {
   const visible = useModalAnimation(isOpen);
   const { createAlbum, creating } = useCreateAlbum();
@@ -239,7 +236,6 @@ function CreateAlbumForm({ creating, createAlbum, onCreate, onClose }) {
   );
 }
 
-// ── ImagePickerModal ──────────────────────────────────────────────────────────
 export function ImagePickerModal({ isOpen, album, onClose, onSaved }) {
   const visible = useModalAnimation(isOpen);
   const {
