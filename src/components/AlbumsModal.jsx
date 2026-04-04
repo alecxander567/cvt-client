@@ -6,6 +6,8 @@ import {
   useGetAlbumImages,
 } from "../hooks/useAlbum";
 
+// ── Shared Icons ──────────────────────────────────────────────────────────────
+
 function AlbumIcon({ size = 18 }) {
   return (
     <svg
@@ -57,6 +59,53 @@ function CheckIcon() {
   );
 }
 
+function CloseIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round">
+      <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+// ── Reusable ModalFooter ──────────────────────────────────────────────────────
+
+function ModalFooter({
+  onCancel,
+  onConfirm,
+  cancelLabel = "Cancel",
+  confirmLabel = "Confirm",
+  loadingLabel = "Loading...",
+  loading = false,
+  disabled = false,
+}) {
+  return (
+    <div className="px-5 py-4 border-t-2 border-black flex gap-2">
+      <button
+        onClick={onCancel}
+        disabled={loading}
+        className="flex-1 py-2 text-xs font-bold uppercase tracking-widest border-2 border-black text-black rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50">
+        {cancelLabel}
+      </button>
+      <button
+        onClick={onConfirm}
+        disabled={loading || disabled}
+        className="flex-1 py-2 text-xs font-bold uppercase tracking-widest bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-40">
+        {loading ? loadingLabel : confirmLabel}
+      </button>
+    </div>
+  );
+}
+
+// ── Modal animation hook ──────────────────────────────────────────────────────
+
 function useModalAnimation(isOpen) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -65,6 +114,8 @@ function useModalAnimation(isOpen) {
   }, [isOpen]);
   return visible;
 }
+
+// ── DeleteAlbumModal ──────────────────────────────────────────────────────────
 
 export function DeleteAlbumModal({
   isOpen,
@@ -85,18 +136,13 @@ export function DeleteAlbumModal({
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${visible ? "opacity-100" : "opacity-0"}`}
         onClick={onCancel}
       />
-
-      {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
         <div
-          className={`bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-sm transition-all duration-200 ${
-            visible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-          }`}>
+          className={`bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-sm transition-all duration-200 ${visible ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}>
           <div className="px-5 py-4 border-b-2 border-black">
             <p className="font-black text-sm uppercase tracking-tight text-black">
               Delete Album
@@ -108,47 +154,36 @@ export function DeleteAlbumModal({
               will be kept but removed from the album.
             </p>
           </div>
-          <div className="px-5 py-4 border-t-2 border-black flex gap-2">
-            <button
-              onClick={onConfirm}
-              disabled={loading}
-              className="flex-1 py-2 text-xs font-bold uppercase tracking-widest bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50">
-              {loading ? "Deleting..." : "Delete"}
-            </button>
-            <button
-              onClick={onCancel}
-              disabled={loading}
-              className="flex-1 py-2 text-xs font-bold uppercase tracking-widest border-2 border-black text-black rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50">
-              Cancel
-            </button>
-          </div>
+          <ModalFooter
+            onCancel={onCancel}
+            onConfirm={onConfirm}
+            confirmLabel="Delete"
+            loadingLabel="Deleting..."
+            loading={loading}
+          />
         </div>
       </div>
     </>
   );
 }
 
+// ── CreateAlbumModal ──────────────────────────────────────────────────────────
+
 export function CreateAlbumModal({ isOpen, onClose, onCreate }) {
   const visible = useModalAnimation(isOpen);
   const { createAlbum, creating } = useCreateAlbum();
 
-  // Use key-based remount pattern for the inner form to avoid setState-in-effect
   if (!isOpen && !visible) return null;
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${visible ? "opacity-100" : "opacity-0"}`}
         onClick={onClose}
       />
-
-      {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
         <div
-          className={`bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-sm transition-all duration-200 ${
-            visible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-          }`}>
+          className={`bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-sm transition-all duration-200 ${visible ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}>
           <CreateAlbumForm
             key={isOpen ? "open" : "closed"}
             creating={creating}
@@ -186,20 +221,9 @@ function CreateAlbumForm({ creating, createAlbum, onCreate, onClose }) {
         <button
           onClick={onClose}
           className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-black">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
+          <CloseIcon />
         </button>
       </div>
-
       <div className="px-5 py-4">
         <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-1.5">
           Album Name
@@ -218,23 +242,19 @@ function CreateAlbumForm({ creating, createAlbum, onCreate, onClose }) {
           {name.length}/60
         </p>
       </div>
-
-      <div className="px-5 py-4 border-t-2 border-black flex gap-2">
-        <button
-          onClick={handleSubmit}
-          disabled={creating || !name.trim()}
-          className="flex-1 py-2 text-xs font-bold uppercase tracking-widest bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-40">
-          {creating ? "Creating..." : "Create Album"}
-        </button>
-        <button
-          onClick={onClose}
-          className="flex-1 py-2 text-xs font-bold uppercase tracking-widest border-2 border-black text-black rounded-lg hover:bg-gray-100 transition-colors">
-          Cancel
-        </button>
-      </div>
+      <ModalFooter
+        onCancel={onClose}
+        onConfirm={handleSubmit}
+        confirmLabel="Create Album"
+        loadingLabel="Creating..."
+        loading={creating}
+        disabled={!name.trim()}
+      />
     </>
   );
 }
+
+// ── ImagePickerModal ──────────────────────────────────────────────────────────
 
 export function ImagePickerModal({ isOpen, album, onClose, onSaved }) {
   const visible = useModalAnimation(isOpen);
@@ -253,9 +273,7 @@ export function ImagePickerModal({ isOpen, album, onClose, onSaved }) {
 
   useEffect(() => {
     if (!isOpen || !album) return;
-
     let cancelled = false;
-
     Promise.all([fetchImages(), fetchAlbumImages(album.id)]).then(
       ([, albumImgs]) => {
         if (cancelled) return;
@@ -266,7 +284,6 @@ export function ImagePickerModal({ isOpen, album, onClose, onSaved }) {
         setInitialized(true);
       },
     );
-
     return () => {
       cancelled = true;
       setInitialized(false);
@@ -309,13 +326,10 @@ export function ImagePickerModal({ isOpen, album, onClose, onSaved }) {
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${visible ? "opacity-100" : "opacity-0"}`}
         onClick={onClose}
       />
-
-      {/* Modal — slides up on mobile, scales in on desktop */}
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
         <div
           className={`bg-white border-2 border-black rounded-t-2xl sm:rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full sm:max-w-2xl sm:mx-4 flex flex-col overflow-hidden transition-all duration-200 ${
@@ -340,17 +354,7 @@ export function ImagePickerModal({ isOpen, album, onClose, onSaved }) {
             <button
               onClick={onClose}
               className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-black shrink-0">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
+              <CloseIcon />
             </button>
           </div>
 
