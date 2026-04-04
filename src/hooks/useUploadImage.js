@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { flagNewActivity } from "../utils/activityFlag";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useUploadImage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -20,7 +22,7 @@ export function useUploadImage() {
       formData.append("file", blob, "capture.png");
 
       const response = await axios.post(
-        "http://localhost:8000/images/upload",
+        `${API_BASE_URL}/images/upload`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } },
       );

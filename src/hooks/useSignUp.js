@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function useSignUp() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -10,12 +12,18 @@ export default function useSignUp() {
   const [successMessage, setSuccessMessage] = useState(null);
 
   const handleSignUp = async () => {
-    setLoading(true);
     setError(null);
     setSuccessMessage(null);
 
+    if (!username.trim() || !email.trim() || !password.trim()) {
+      setError("All fields are required.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const { data } = await axios.post("http://localhost:8000/auth/signup", {
+      const { data } = await axios.post(`${API_BASE_URL}/auth/signup`, {
         username,
         email,
         password,

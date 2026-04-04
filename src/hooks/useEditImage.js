@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { flagNewActivity } from "../utils/activityFlag";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useEditImage() {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState(null);
@@ -14,7 +16,7 @@ export function useEditImage() {
       if (!token) throw new Error("Not authenticated");
 
       const res = await axios.patch(
-        `http://localhost:8000/images/${imageId}`,
+        `${API_BASE_URL}/images/${imageId}`,
         updates,
         { headers: { Authorization: `Bearer ${token}` } },
       );

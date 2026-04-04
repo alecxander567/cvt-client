@@ -2,8 +2,10 @@ import { useState, useCallback } from "react";
 import axios from "axios";
 import { flagNewActivity } from "../utils/activityFlag";
 
-const BASE_URL = "http://localhost:8000/albums";
-const IMAGES_URL = "http://localhost:8000/images";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+const BASE_URL = `${API_BASE_URL}/albums`;
+const IMAGES_URL = `${API_BASE_URL}/images`;
 
 function getAuthHeader() {
   const token = localStorage.getItem("access_token");

@@ -1,5 +1,7 @@
 import { useState } from "react";
-import axios from "axios"; 
+import axios from "axios";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export function useCompareAlbum() {
   const [loading, setLoading] = useState(false);
@@ -10,7 +12,6 @@ export function useCompareAlbum() {
       setLoading(true);
       setError(null);
 
-      // convert base64 → blob
       const res = await fetch(imageBase64);
       const blob = await res.blob();
 
@@ -20,12 +21,12 @@ export function useCompareAlbum() {
       const token = localStorage.getItem("access_token");
 
       const response = await axios.post(
-        `http://localhost:8000/images/compare-album/${albumId}`,
+        `${API_BASE_URL}/images/compare-album/${albumId}`,
         formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data", 
+            "Content-Type": "multipart/form-data",
           },
         },
       );

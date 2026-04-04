@@ -1,11 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-/**
- * useMyImages
- * Fetches the logged-in user's images from GET /images/my-images
- * Returns { images, loading, error, refetch }
- */
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useMyImages() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +15,7 @@ export function useMyImages() {
       const token = localStorage.getItem("access_token");
       if (!token) throw new Error("Not authenticated");
 
-      const res = await axios.get("http://localhost:8000/images/my-images", {
+      const res = await axios.get(`${API_BASE_URL}/images/my-images`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

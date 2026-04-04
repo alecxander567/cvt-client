@@ -1,11 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-/**
- * useArchivedImages
- * Fetches all archived (soft-deleted) images for the current user.
- * Returns { images, loading, error, refetch }
- */
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useArchivedImages() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +16,7 @@ export function useArchivedImages() {
       const token = localStorage.getItem("access_token");
       if (!token) throw new Error("Not authenticated");
 
-      const res = await axios.get("http://localhost:8000/images/archived", {
+      const res = await axios.get(`${API_BASE_URL}/images/archived`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { flagNewActivity } from "../utils/activityFlag";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useDeleteImage() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
@@ -13,7 +15,7 @@ export function useDeleteImage() {
       const token = localStorage.getItem("access_token");
       if (!token) throw new Error("Not authenticated");
 
-      await axios.delete(`http://localhost:8000/images/${imageId}`, {
+      await axios.delete(`${API_BASE_URL}/images/${imageId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

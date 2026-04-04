@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useActivityLogs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +13,7 @@ export function useActivityLogs() {
     setError(null);
     try {
       const token = localStorage.getItem("access_token");
-      const res = await axios.get("http://localhost:8000/activity/", {
+      const res = await axios.get(`${API_BASE_URL}/activity/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setLogs(res.data);
@@ -26,7 +28,6 @@ export function useActivityLogs() {
     fetchLogs();
   }, [fetchLogs]);
 
-  // Auto-refetch whenever any hook flags a new activity
   useEffect(() => {
     const handleNewActivity = () => fetchLogs();
     window.addEventListener("history-activity-updated", handleNewActivity);

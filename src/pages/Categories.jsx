@@ -2,6 +2,7 @@ import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Alert from "../components/Alert";
 import ConfirmModal from "../components/ConfirmModal";
+import EditCategoryModal from "../components/EditCategoryModal";
 import {
   useCategories,
   useCreateCategory,
@@ -17,8 +18,7 @@ function CategoriesPage() {
 
   const [alert, setAlert] = useState({ type: "", message: "" });
   const [newName, setNewName] = useState("");
-  const [editingId, setEditingId] = useState(null);
-  const [editingName, setEditingName] = useState("");
+  const [editingCategory, setEditingCategory] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
   const showAlert = (type, message) => setAlert({ type, message });
@@ -35,12 +35,10 @@ function CategoriesPage() {
     }
   };
 
-  const handleUpdate = async (id) => {
-    if (!editingName.trim()) return;
+  const handleUpdate = async (name) => {
     try {
-      await updateCategory(id, editingName.trim());
-      setEditingId(null);
-      setEditingName("");
+      await updateCategory(editingCategory.id, name);
+      setEditingCategory(null);
       showAlert("success", "Category updated successfully!");
       refetch();
     } catch (err) {
@@ -169,22 +167,9 @@ function CategoriesPage() {
                     className={`border-t-2 border-black ${idx % 2 === 0 ? "bg-white" : "bg-gray-50"}`}>
                     {/* Name cell */}
                     <td className="px-4 py-3">
-                      {editingId === cat.id ?
-                        <input
-                          type="text"
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleUpdate(cat.id);
-                            if (e.key === "Escape") setEditingId(null);
-                          }}
-                          autoFocus
-                          className="w-full px-2 py-1 text-xs font-bold border-2 border-black rounded-lg outline-none focus:ring-2 focus:ring-black"
-                        />
-                      : <span className="font-black text-xs uppercase tracking-tight">
-                          {cat.name}
-                        </span>
-                      }
+                      <span className="font-black text-xs uppercase tracking-tight">
+                        {cat.name}
+                      </span>
                     </td>
 
                     {/* Date cell */}
@@ -201,90 +186,45 @@ function CategoriesPage() {
                     {/* Actions cell */}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        {editingId === cat.id ?
-                          <>
-                            {/* Save */}
-                            <button
-                              onClick={() => handleUpdate(cat.id)}
-                              disabled={updating}
-                              className="w-8 h-8 flex items-center justify-center bg-black text-white border-2 border-black rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
-                              title="Save">
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round">
-                                <path d="M1 13l4 4L19 5" />
-                              </svg>
-                            </button>
+                        {/* Edit */}
+                        <button
+                          onClick={() => setEditingCategory(cat)}
+                          className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg hover:bg-black hover:text-white transition-colors"
+                          title="Edit">
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
 
-                            {/* Cancel */}
-                            <button
-                              onClick={() => setEditingId(null)}
-                              className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg hover:bg-gray-100 transition-colors"
-                              title="Cancel">
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round">
-                                <path d="M18 6L6 18M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </>
-                        : <>
-                            {/* Edit */}
-                            <button
-                              onClick={() => {
-                                setEditingId(cat.id);
-                                setEditingName(cat.name);
-                              }}
-                              className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg hover:bg-black hover:text-white transition-colors"
-                              title="Edit">
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round">
-                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                              </svg>
-                            </button>
-
-                            {/* Delete */}
-                            <button
-                              onClick={() => setDeletingId(cat.id)}
-                              className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg hover:bg-red-600 hover:border-red-600 hover:text-white transition-colors"
-                              title="Delete">
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round">
-                                <polyline points="3 6 5 6 21 6" />
-                                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                                <path d="M10 11v6M14 11v6" />
-                                <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-                              </svg>
-                            </button>
-                          </>
-                        }
+                        {/* Delete */}
+                        <button
+                          onClick={() => setDeletingId(cat.id)}
+                          className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg hover:bg-red-600 hover:border-red-600 hover:text-white transition-colors"
+                          title="Delete">
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                            <path d="M10 11v6M14 11v6" />
+                            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                          </svg>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -296,6 +236,14 @@ function CategoriesPage() {
       </div>
 
       <Alert type={alert.type} message={alert.message} />
+
+      <EditCategoryModal
+        isOpen={!!editingCategory}
+        category={editingCategory}
+        loading={updating}
+        onConfirm={handleUpdate}
+        onCancel={() => setEditingCategory(null)}
+      />
 
       <ConfirmModal
         isOpen={!!deletingId}

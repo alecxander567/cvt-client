@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { flagNewActivity } from "../utils/activityFlag";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useUploadImageFromDevice() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,7 +20,7 @@ export function useUploadImageFromDevice() {
       const token = localStorage.getItem("access_token");
 
       const response = await axios.post(
-        "http://localhost:8000/images/upload-image",
+        `${API_BASE_URL}/images/upload-image`,
         formData,
         {
           headers: {

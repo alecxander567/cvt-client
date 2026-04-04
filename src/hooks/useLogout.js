@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useLogout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,7 +18,7 @@ export function useLogout() {
 
       if (token) {
         await axios.post(
-          "http://localhost:8000/auth/logout",
+          `${API_BASE_URL}/auth/logout`,
           {},
           {
             headers: {

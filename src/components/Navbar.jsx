@@ -57,8 +57,9 @@ function Navbar() {
     return false;
   };
 
-  const isActivePath = (path) =>
-    location.pathname === path || location.pathname.startsWith(path + "/");
+  const isProfileSettingsActive =
+    location.pathname.startsWith("/profile") ||
+    location.pathname.startsWith("/settings");
 
   return (
     <nav className="w-full border-b-2 border-black bg-white">
@@ -121,21 +122,11 @@ function Navbar() {
           <Link
             to="/profile"
             className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-colors ${
-              isActivePath("/profile") ?
+              isProfileSettingsActive ?
                 "bg-black text-white"
               : "text-gray-500 hover:text-black hover:bg-gray-100"
             }`}>
-            Profile
-          </Link>
-
-          <Link
-            to="/settings"
-            className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-colors ${
-              isActivePath("/settings") ?
-                "bg-black text-white"
-              : "text-gray-500 hover:text-black hover:bg-gray-100"
-            }`}>
-            Settings
+            Profile & Settings
           </Link>
 
           <button
@@ -187,21 +178,11 @@ function Navbar() {
             to="/profile"
             onClick={() => setMenuOpen(false)}
             className={`px-3 py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-colors ${
-              isActivePath("/profile") ?
+              isProfileSettingsActive ?
                 "bg-black text-white"
               : "text-gray-500 hover:text-black hover:bg-gray-100"
             }`}>
-            Profile
-          </Link>
-          <Link
-            to="/settings"
-            onClick={() => setMenuOpen(false)}
-            className={`px-3 py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-colors ${
-              isActivePath("/settings") ?
-                "bg-black text-white"
-              : "text-gray-500 hover:text-black hover:bg-gray-100"
-            }`}>
-            Settings
+            Profile & Settings
           </Link>
           <div className="h-px bg-gray-200 my-1" />
           <button

@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { flagNewActivity } from "../utils/activityFlag";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useRestoreImage() {
   const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState(null);
@@ -14,7 +16,7 @@ export function useRestoreImage() {
       if (!token) throw new Error("Not authenticated");
 
       await axios.patch(
-        `http://localhost:8000/images/restore/${imageId}`,
+        `${API_BASE_URL}/images/restore/${imageId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -45,7 +47,7 @@ export function usePermanentDeleteImage() {
       const token = localStorage.getItem("access_token");
       if (!token) throw new Error("Not authenticated");
 
-      await axios.delete(`http://localhost:8000/images/permanent/${imageId}`, {
+      await axios.delete(`${API_BASE_URL}/images/permanent/${imageId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

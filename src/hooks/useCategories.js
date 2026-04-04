@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { flagNewActivity } from "../utils/activityFlag";
 
-const api = axios.create({ baseURL: "http://localhost:8000" });
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+const api = axios.create({ baseURL: API_BASE_URL });
 const getHeaders = (token) => ({ Authorization: `Bearer ${token}` });
 
 export function useCategories() {

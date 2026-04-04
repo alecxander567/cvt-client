@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function useLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,17 +14,22 @@ export default function useLogin() {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    setLoading(true);
     setError(null);
     setSuccessMessage(null);
 
+    if (!email.trim() || !password.trim()) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const { data } = await axios.post("http://localhost:8000/auth/login", {
+      const { data } = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password,
       });
 
-      // Store JWT token
       localStorage.setItem("access_token", data.access_token);
 
       setSuccessMessage("Login successful! Redirecting...");

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useCompareImage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -9,7 +11,6 @@ export function useCompareImage() {
     try {
       setLoading(true);
 
-      // convert base64 → file
       const res = await fetch(base64Image);
       const blob = await res.blob();
 
@@ -19,7 +20,7 @@ export function useCompareImage() {
       const token = localStorage.getItem("access_token");
 
       const response = await axios.post(
-        `http://localhost:8000/images/compare/${imageId}`,
+        `${API_BASE_URL}/images/compare/${imageId}`,
         formData,
         {
           headers: {
