@@ -1,16 +1,84 @@
-# React + Vite
+# Custom Vision Tagger
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack web application for intelligent image recognition, organization, and comparison.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🌐 Live Demo
+Try it here:
 
-## React Compiler
+* URL: [https://your-frontend-url.vercel.app](https://cvt-client.vercel.app)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+🚀 Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+🔐 Authentication system (JWT-based)
+
+🖼️ Image upload and storage (Cloudinary)
+
+📂 Album management (create, delete, organize)
+
+🔍 Image-to-image comparison
+
+🆚 Image-to-album comparison 
+
+🗂️ Archive system (soft delete & restore)
+
+📊 Activity tracking
+
+---
+
+## 🏗️ Tech Stack
+
+### Frontend
+
+* React.js
+* JavaScript
+* Tailwind CSS
+
+### Backend
+
+* FastAPI (Python)
+* Supabase (Database & Auth)
+
+### Machine Learning
+
+* PyTorch
+* Torchvision (MobileNetV2 - pretrained)
+* Feature Embeddings (1280-dim vectors)
+* Cosine Similarity for image comparison
+* Lazy model loading for optimized deployment (Render-friendly)
+
+---
+
+## 📁 Project Structure
+
+```
+frontend/
+  ├── components/
+  ├── pages/
+  ├── hooks/
+  └── services/
+
+backend/
+  ├── routes/
+  ├── models/
+  ├── utils/
+  └── main.py
+```
+
+## 🧠 How It Works
+
+1. Users upload images through the frontend
+2. Images are stored in Cloudinary
+3. Backend processes images using TensorFlow
+4. Extracted features are used for comparison
+5. Results are returned and displayed in the UI
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
